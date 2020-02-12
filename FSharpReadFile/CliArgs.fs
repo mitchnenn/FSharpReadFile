@@ -3,6 +3,7 @@ namespace FSharpReadFile
 module CliArgsModule = 
 
     open Argu
+    open DomainMessage
 
     type CliArgs =
         | [<Mandatory>] [<First>] Input_File of path:string
@@ -18,10 +19,10 @@ module CliArgsModule =
             let parsed = parser.Parse argv
             Ok parsed
         with
-            | :? ArguParseException as ex -> Error ex.Message
+            | :? ArguParseException as ex -> Error (CommandLineParseFailed ex)
 
     let getInputFile progName argv =
         let argListResult = parsedArgs progName argv
         match argListResult with
         | Ok args -> args.GetResult Input_File
-        | Error err -> err
+        | Error _ -> getDomainMessage argListResult
