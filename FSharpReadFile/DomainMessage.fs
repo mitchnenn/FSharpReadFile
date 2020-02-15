@@ -6,6 +6,7 @@ module DomainMessage =
     
     type DomainMessage =
         | CommandLineParseFailed of Exception
+        | CommandLineInputFileNotFound
 
     let getDomainMessage result =
         match result with
@@ -13,4 +14,5 @@ module DomainMessage =
         | Error err ->
             match err with
             | CommandLineParseFailed (ex) -> sprintf "CLI parsed failed. %s" ex.Message
+            | CommandLineInputFileNotFound -> sprintf "Input file not found."
             

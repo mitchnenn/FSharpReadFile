@@ -1,5 +1,7 @@
 namespace FSharpReadFile
 
+open System
+
 module CliArgsModule = 
 
     open Argu
@@ -15,14 +17,19 @@ module CliArgsModule =
                 
     let parsedArgs progName argv =
         try
-            let parser = ArgumentParser.Create<CliArgs>(progName)
+            let errorHandler = ProcessExiter(colorizer = function ErrorCode.HelpText -> None | _ -> Some ConsoleColor.Red)
+            let parser = ArgumentParser.Create<CliArgs>(progName, errorHandler = errorHandler)
             let parsed = parser.Parse argv
             Ok parsed
         with
             | :? ArguParseException as ex -> Error (CommandLineParseFailed ex)
 
-    let getInputFile progName argv =
-        let argListResult = parsedArgs progName argv
-        match argListResult with
-        | Ok args -> args.GetResult Input_File
-        | Error _ -> getDomainMessage argListResult
+    let getInputFile (parseResult : Result<ParseResults<CliArgs>, DomainMessage>) =
+        let someResults = match parseResult with | Ok p -> Some(p) | Error _ -> None
+        if (someResults.IsSome) then
+            let results = someResults.Value
+            match results with
+            | p when p.Contains(Input_File) -> Ok (p.GetResult Input_File)
+            | _ -> Error CommandLineInputFileNotFound
+        else
+            Error CommandLineInputFileNotFound
