@@ -1,9 +1,8 @@
 namespace FSharpReadFile
 
-open System
-
 module CliArgsModule = 
 
+    open System
     open Argu
     open DomainMessage
 
@@ -24,12 +23,6 @@ module CliArgsModule =
         with
             | :? ArguParseException as ex -> Error (CommandLineParseFailed ex)
 
-    let getInputFile (parseResult : Result<ParseResults<CliArgs>, DomainMessage>) =
-        let someResults = match parseResult with | Ok p -> Some(p) | Error _ -> None
-        if (someResults.IsSome) then
-            let results = someResults.Value
-            match results with
-            | p when p.Contains(Input_File) -> Ok (p.GetResult Input_File)
-            | _ -> Error CommandLineInputFileNotFound
-        else
-            Error CommandLineInputFileNotFound
+    let getInputFile (result : Result<ParseResults<CliArgs>, DomainMessage>) =
+        match result with | Ok args -> args.GetResult(Input_File) | Error _ -> ""
+ 
